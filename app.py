@@ -49,6 +49,7 @@ def get_data():
     #df = pd.DataFrame(data)
     df = pd.json_normalize(data)
     return df 
+
 df = get_data()
 
 
@@ -133,34 +134,40 @@ if st.button('Download Musical Type Results as CSV'):
 st.markdown("---")
 
 # Function to filter by subfields
-def filter_by_subfield(SUBFIELD):
-    COL_NAME = 'details.' + SUBFIELD
+def filter_by_subfield(subfield):
+    col_name = 'details.' + subfield
 
-    select_data_sf = df[["id", "observer", "musical_type", COL_NAME]]
+    select_data_sf = df[["id", "observer", "musical_type", col_name]]
 
-    st.subheader("Select Observations by " + SUBFIELD)
-    sf_list = df[COL_NAME].unique().tolist()
-    sf_selected = st.multiselect('', sf_list)
+    st.subheader(subfield)
+    sf_list = df[col_name].unique().tolist()
+    sf_selected = st.multiselect('Choose ' + subfield, sf_list)
 
     # # Mask to filter dataframe:  returns only those "selected" in previous step
-    masked_sf = df[COL_NAME].isin(sf_selected)
+    masked_sf = df[col_name].isin(sf_selected)
 
     select_data_sf = select_data_sf[masked_sf]
     st.write(select_data_sf)
 
     ## Button to download CSV of results 
-    sf_text = st.text_input(SUBFIELD + ' file for download (must include ".csv")')
-    if st.button('Download ' + SUBFIELD + ' results as CSV'):
+    sf_text = st.text_input(subfield + ' file for download (must include ".csv")')
+    if st.button('Download ' + subfield + ' results as CSV'):
         tmp_download_link = download_link(select_data_sf, sf_text, 'Click here to download your data!')
         st.markdown(tmp_download_link, unsafe_allow_html=True)
 
     st.markdown("---")
 
 
+st.subheader("Select Observations by Subfields")
+colnames = df.columns.values.tolist()
+subfields = []
+for col in colnames:
+    if "details." in col:
+        subfields.append(col[8:])
 
-# Testing 
-filter_by_subfield('Number of voices')
-filter_by_subfield('Flexed')
+subfield_selected = st.multiselect('', subfields)
+for sf in subfield_selected:
+    filter_by_subfield(sf)
 
 
 
