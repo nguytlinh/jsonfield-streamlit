@@ -52,7 +52,6 @@ def get_data():
 df = get_data()
 
 
-#select_data = df[["id", "observer.name", "musical_type"]]
 select_data = df[["id", "observer", "musical_type"]]
 
 # Sidebar options for _all_ data of a particular type
@@ -93,7 +92,6 @@ st.write('Use the following dialogues to filter for one or more Analyst, Observa
 st.write('To download a CSV file with the given results, provide a filename as requested, then click the download button')
 
 
-
 st.subheader("Select Observations by Analyst")
 obs_list = select_data['observer'].unique().tolist()
 obs_selected = st.multiselect('', obs_list)
@@ -131,6 +129,38 @@ if st.button('Download Musical Type Results as CSV'):
     tmp_download_link = download_link(select_data_3, s3, 'Click here to download your data!')
     st.markdown(tmp_download_link, unsafe_allow_html=True)
 
+
+st.markdown("---")
+
+# Function to filter by subfields
+def filter_by_subfield(SUBFIELD):
+    COL_NAME = 'details.' + SUBFIELD
+
+    select_data_sf = df[["id", "observer", "musical_type", COL_NAME]]
+
+    st.subheader("Select Observations by " + SUBFIELD)
+    sf_list = df[COL_NAME].unique().tolist()
+    sf_selected = st.multiselect('', sf_list)
+
+    # # Mask to filter dataframe:  returns only those "selected" in previous step
+    masked_sf = df[COL_NAME].isin(sf_selected)
+
+    select_data_sf = select_data_sf[masked_sf]
+    st.write(select_data_sf)
+
+    ## Button to download CSV of results 
+    sf_text = st.text_input(SUBFIELD + ' file for download (must include ".csv")')
+    if st.button('Download ' + SUBFIELD + ' results as CSV'):
+        tmp_download_link = download_link(select_data_sf, sf_text, 'Click here to download your data!')
+        st.markdown(tmp_download_link, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+
+
+# Testing 
+filter_by_subfield('Number of voices')
+filter_by_subfield('Flexed')
 
 
 
