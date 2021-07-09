@@ -134,6 +134,18 @@ def filter_by(filterer, select_data, full_data, key):
     
     return [fullframe, subframe]
 
+def draw_chart(col_name, origdf):
+    chart_data = origdf
+    chart_data['count'] = chart_data.groupby(by=col_name)[col_name].transform('count')
+    
+    #TODO: Format chart for easier view
+    chart = alt.Chart(chart_data).mark_bar().encode(
+        x = "count:Q",
+        y = col_name + ":O"
+    )
+    st.write(chart) 
+
+
 st.markdown("---")
 st.header("OBSERVATION VIEWER")
 
@@ -155,6 +167,12 @@ if (order == 'Piece then Musical Type'):
     st.markdown('Resulting observations:')
     #st.write(mt_full)
     st.write(mt_sub)
+
+    st.write("Graphical representation of result")
+    draw_chart("musical_type", mt_sub)
+    #debug in progress for piece
+    draw_chart("piece.piece_id", mt_sub)
+
 else:
     #filter by musical type
     st.subheader("Musical Type")
@@ -170,6 +188,11 @@ else:
     piece_sub = piece_frames[1]
     st.markdown('Resulting observations:')
     st.write(piece_sub)
+
+    st.write("Graphical representation of result")
+    draw_chart("musical_type", piece_sub)
+    #debug in progress for piece
+    draw_chart("piece.piece_id", piece_sub)
 
 
 
