@@ -134,14 +134,14 @@ def filter_by(filterer, select_data, full_data, key):
     
     return [fullframe, subframe]
 
-def draw_chart(col_name, origdf):
-    chart_data = origdf
-    chart_data['count'] = chart_data.groupby(by=col_name)[col_name].transform('count')
-    
+def draw_chart(col_name, count_name, origdf):
+    chart_data = origdf.copy()
+    chart_data[count_name] = chart_data.groupby(by=col_name)[col_name].transform('count')
+    st.write(chart_data)
     #TODO: Format chart for easier view
     chart = alt.Chart(chart_data).mark_bar().encode(
-        x = "count:Q",
-        y = col_name + ":O"
+        x = count_name,
+        y = col_name,
     )
     st.write(chart) 
 
@@ -165,13 +165,14 @@ if (order == 'Piece then Musical Type'):
     mt_full = mt_frames[0]
     mt_sub = mt_frames[1]
     st.markdown('Resulting observations:')
-    #st.write(mt_full)
-    st.write(mt_sub)
+    st.write(mt_full)
+    #st.write(mt_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("musical_type", mt_sub)
+    draw_chart("musical_type", "counttype", mt_sub)
+    draw_chart("piece.piece_id", "countpiece", mt_sub)
     #debug in progress for piece
-    draw_chart("piece.piece_id", mt_sub)
+    
 
 else:
     #filter by musical type
@@ -190,9 +191,75 @@ else:
     st.write(piece_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("musical_type", piece_sub)
+    draw_chart("musical_type", "counttype", piece_sub)
     #debug in progress for piece
-    draw_chart("piece.piece_id", piece_sub)
+    draw_chart("piece.piece_id", "countpiece", piece_sub)
+
+
+st.markdown("---")
+st.header("Subtype Charts All Data")
+
+type_options = ['Cadence', 'Fuga', 'Periodic Entry', 'Imitative Duo', 'Non-Imitative Duo', 'Homorythm']
+selected_type = st.radio('', type_options, key = 'g')
+
+if selected_type == "Cadence":
+    fg_chosen = (df['mt_fg'] == 1)
+    fg_sub = select_data[fg_chosen]
+    fg_full = df[fg_chosen]
+    st.write(fg_full)
+
+    
+    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+
+if selected_type == "Fuga":
+    cd_chosen = (df['mt_cad'] == 1)
+    cd_sub = select_data[cd_chosen]
+    cd_full = df[cd_chosen]
+    st.write(cd_full)
+
+    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+
+if selected_type == "Periodic Entry":
+    cd_chosen = (df['mt_cad'] == 1)
+    cd_sub = select_data[cd_chosen]
+    cd_full = df[cd_chosen]
+    st.write(cd_full)
+
+    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+
+if selected_type == "Imitative Duo":
+    cd_chosen = (df['mt_cad'] == 1)
+    cd_sub = select_data[cd_chosen]
+    cd_full = df[cd_chosen]
+    st.write(cd_full)
+
+    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+
+if selected_type == "Non-Imitative Duo":
+    cd_chosen = (df['mt_cad'] == 1)
+    cd_sub = select_data[cd_chosen]
+    cd_full = df[cd_chosen]
+    st.write(cd_full)
+
+    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+
+if selected_type == "Homorhythm":
+    cd_chosen = (df['mt_cad'] == 1)
+    cd_sub = select_data[cd_chosen]
+    cd_full = df[cd_chosen]
+    st.write(cd_full)
+
+    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+    
+
+
+
 
 
 
