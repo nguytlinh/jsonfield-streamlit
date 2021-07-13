@@ -39,9 +39,9 @@ def download_link(object_to_download, download_filename, download_link_text):
 
 st.header("CRIM Project Meta Data Viewer")
 
-#st.subheader("These tools assemble metadata for about 5000 observations in Citations: The Renaissance Imitation Mass")
-#st.write("Visit the [CRIM Project](https://crimproject.org) and its [Members Pages] (https://sites.google.com/haverford.edu/crim-project/home)")
-#st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship-data-viewer.herokuapp.com/)")
+st.subheader("These tools assemble metadata for about 5000 observations in Citations: The Renaissance Imitation Mass")
+st.write("Visit the [CRIM Project](https://crimproject.org) and its [Members Pages] (https://sites.google.com/haverford.edu/crim-project/home)")
+st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship-data-viewer.herokuapp.com/)")
 
 # st.cache speeds things up by holding data in cache
 
@@ -54,19 +54,18 @@ def get_data(link):
     df = pd.json_normalize(data)
     return df 
 
-#df = get_data('http://127.0.0.1:8000/data/observations/')
-#df_r = get_data('http://127.0.0.1:8000/data/relationships/')
 
 df = get_data('http://crimproject.org/data/observations/')
+df.rename(columns={'piece.piece_id':'piece_piece_id'}, inplace=True)
+
 df_r = get_data('http://crimproject.org/data/relationships/')
+df_r.rename(columns={'piece.piece_id':'piece_piece_id', 
+                    'model_observation.piece.piece_id':'model_observation_piece_piece_id',
+                    'derivative_observation.piece.piece_id':'derivative_observation_piece_piece_id',}, inplace=True)
 
-#select_data = df[["id", "observer", "musical_type"]]
-#select_data_r = df_r[["id", "observer", "relationship_type"]]
+select_data = df[["id", "observer.name", "piece_piece_id", "musical_type"]]
+select_data_r = df_r[['id', 'observer.name', 'model_observation_piece_piece_id', 'derivative_observation_piece_piece_id', 'relationship_type']]
 
-ema_test_data = df[["id", "piece.url", "ema", "piece.piece_id"]]
-select_data = df[["id", "observer.name", "piece.piece_id", "musical_type"]]
-
-select_data_r = df_r[['id', 'observer.name', 'model_observation.piece.piece_id', 'derivative_observation.piece.piece_id', 'relationship_type']]
 
 # Sidebar options for _all_ data of a particular type
 
@@ -159,7 +158,7 @@ order = st.radio("Select order to filter data: ", ('Piece then Musical Type', 'M
 if (order == 'Piece then Musical Type'):
     #filter by piece
     st.subheader("Piece")
-    piece_frames = filter_by("piece.piece_id", select_data, df, 'a')
+    piece_frames = filter_by("piece_piece_id", select_data, df, 'a')
     piece_full = piece_frames[0]
     piece_sub = piece_frames[1]
     #st.write(piece_full)
@@ -176,8 +175,7 @@ if (order == 'Piece then Musical Type'):
 
     st.write("Graphical representation of result")
     draw_chart("musical_type", "counttype", mt_sub)
-    draw_chart("piece.piece_id", "countpiece", mt_sub)
-    #debug in progress for piece
+    draw_chart("piece_piece_id", "countpiece", mt_sub)
     
 
 else:
@@ -190,7 +188,7 @@ else:
 
     #filter by piece with or without musical type
     st.subheader("Piece")
-    piece_frames = filter_by('piece.piece_id', mt_sub, mt_full, 'y')
+    piece_frames = filter_by('piece_piece_id', mt_sub, mt_full, 'y')
     piece_full = piece_frames[0]
     piece_sub = piece_frames[1]
     st.markdown('Resulting observations:')
@@ -199,7 +197,7 @@ else:
     st.write("Graphical representation of result")
     draw_chart("musical_type", "counttype", piece_sub)
     #debug in progress for piece
-    draw_chart("piece.piece_id", "countpiece", piece_sub)
+    draw_chart("piece_piece_id", "countpiece", piece_sub)
 
 
 st.markdown("---")
@@ -325,132 +323,6 @@ if selected_type == "Homorhythm":
     
 
 
-
-
-
-
-#List out all subfields for debugging
-#col_list = [col for col in mt_full.columns if 'details.' in col ]
-#st.write(col_list)
-
-#Test subfield filters
-#i = 0
-#for col in col_list:
-#    i=i+1
-#    subfield_data = [True, False]
-#    details_selected = st.radio('Choose ' + str(col), subfield_data, key=str(i))
-
-
-    
-#SessionState to filter musical types
-#st.subheader("Musical Type 2")
-#st.markdown("Using SessionState (?)")
-
-
-#st.subheader('Example use of SessionState')
-#def show_details(mtype):
-#	if mtype == "Fuga":
-#		list1 = ['Flexed','Inverted','Strict','Periodic']
-#	elif mtype == "PEN":
-#		list1 = ['Invertible','Strict','Flexed','Added','Sequential']
-	
-#	return list1
-
-#def inp_det(type):
-#    if type == 'musical type':
-#        st.write('Enter name (Fuga/PEN)')
-#        mtype = st.text_input('musical type name')
-#    elif type == 'observer':
-#        st.write('Enter name (Alice/Bob)')
-#        mtype = st.text_input('observer name')
-#    return mtype
-    
-#def main():
-#    mtype = inp_det('musical type')
-#    session_state = SessionState.get(name="", button_sent=False)
-#    button_sent = st.button("SUBMIT")
-#    if button_sent or session_state.button_sent: # <-- first time is button interaction, next time use state to go to multiselect
-#        session_state.button_sent = True
-#        listdetails = show_details(mtype)
-#        selected=st.multiselect('Select the details',listdetails)
-#        st.write(selected)
-
-#if __name__ == "__main__":
-#    main()
-
-
-#Forms to have all information sent at the same time
-#st.subheader("Musical Type 3")
-#st.markdown("Using st.forms (?)")
-
-#st.markdown("---")
-#st.header("Replicate Site Search Views - Search for Relationships")
-#st.write(df_r)
-
-#filter by observer
-#st.subheader("Observer")
-#observer_frames_r = filter_by('observer', select_data_r, df_r, 'c')
-#observer_full_r = observer_frames_r[0]
-#observer_sub_r = observer_frames_r[1]
-#st.write(observer_full_r)
-
-#filter by type with or without observer
-#st.subheader("Relationship Type")
-#rt_frames = filter_by('observer', observer_sub_r, observer_full_r, 'd')
-#rt_full = observer_frames_r[0]
-#rt_sub = observer_frames_r[1]
-#st.write(rt_full)
-
-
-#st.subheader("Model Musical Type")
-
-#mmt_list = rt_full['model_observation.musical_type'].unique().tolist()
-#mmt_list = ["Fuga"]
-#mmt_selected = st.radio('', mmt_list)
-#mmt_selected_list = list(mmt_selected)
-
-#if mmt_selected_list:
-#    masked_mmt = rt_full['model_observation.musical_type'].isin([mmt_selected])
-#    mmt_full = rt_full[masked_mmt]
-
-#else:
-#    mmt_full = rt_full
-
-
-#st.markdown("relationships at this point:")
-#st.write(mmt_full)
-
-#m_col_list = [col for col in mmt_full.columns if 'model_observation.details' in col ]
-#st.write(m_col_list)
-
-
-#st.subheader("Derivative Musical Type")
-
-#dmt_list = mmt_full['derivative_observation.musical_type'].unique().tolist()
-#dmt_selected = st.radio('', dmt_list, key="e")
-#dmt_selected_list = list(dmt_selected)
-
-#if dmt_selected_list:
-#    masked_dmt = mmt_full['derivative_observation.musical_type'].isin([dmt_selected])
-#    dmt_full = mmt_full[masked_dmt]
-
-#else:
-#    dmt_full = mmt_full
-
-
-#st.markdown("relationships at this point:")
-#st.write(dmt_full)
-
-#d_col_list = [col for col in dmt_full.columns if 'derivative_observation.details' in col ]
-#st.write(d_col_list)
-
-#TODO: Visualize data in df
-#st.subheader("Graphical representation of data in observations")
-#hist_values=np.histogram(df['musical_type'].tolist())
-#st.bar_chart(hist_values)
-
-
-
 st.markdown("---")
 st.header("RELATIONSHIP VIEWER")
 
@@ -458,14 +330,12 @@ order = st.radio("Select order to filter data: ", ('Pieces then Relationship Typ
 if (order == 'Pieces then Relationship Type'):
     #filter by pieces
     st.subheader("Model Piece")
-    mpiece_frames = filter_by("model_observation.piece.piece_id", select_data_r, df_r, 'c')
+    mpiece_frames = filter_by("model_observation_piece_piece_id", select_data_r, df_r, 'c')
     mpiece_full = mpiece_frames[0]
     mpiece_sub = mpiece_frames[1]
-    #st.write(piece_full)
-    #st.write(piece_sub)
 
     st.subheader("Derivative Piece")
-    dpiece_frames = filter_by("derivative_observation.piece.piece_id", mpiece_sub, mpiece_full, 'd')
+    dpiece_frames = filter_by("derivative_observation_piece_piece_id", mpiece_sub, mpiece_full, 'd')
     dpiece_full = dpiece_frames[0]
     dpiece_sub = dpiece_frames[1]
 
@@ -480,7 +350,8 @@ if (order == 'Pieces then Relationship Type'):
 
     st.write("Graphical representation of result")
     draw_chart("relationship_type", "counttype", rt_sub)
-    draw_chart("piece.piece_id", "countpiece", rt_sub)
+    draw_chart("model_observation_piece_piece_id", "countmpiece", rt_sub)
+    draw_chart("derivative_observation_piece_piece_id", "countdpiece", rt_sub)
 
 else:
     #filter by musical type
@@ -492,19 +363,20 @@ else:
 
     #filter by piece with or without musical type
     st.subheader("Model Piece")
-    mpiece_frames = filter_by('model_observation.piece.piece_id', rt_sub, rt_full, 'w')
+    mpiece_frames = filter_by('model_observation_piece_piece_id', rt_sub, rt_full, 'w')
     mpiece_full = mpiece_frames[0]
     mpiece_sub = mpiece_frames[1]
     #st.write(mpiece_sub)
 
     st.subheader("Derivative Piece")
-    dpiece_frames = filter_by('derivative_observation.piece.piece_id', mpiece_sub, mpiece_full, 'v')
+    dpiece_frames = filter_by('derivative_observation_piece_piece_id', mpiece_sub, mpiece_full, 'v')
     dpiece_full = dpiece_frames[0]
     dpiece_sub = dpiece_frames[1]
     st.markdown('Resulting relationships:')
     st.write(dpiece_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("piece.piece_id", "countpiece", dpiece_sub)
+    draw_chart("model_observation_piece_piece_id", "countmpiece", dpiece_sub)
+    draw_chart("derivative_observation_piece_piece_id", "countdpiece", rt_sub)
     draw_chart("relationship_type", "counttype", dpiece_sub)
 
