@@ -1,0 +1,8 @@
+streamlit
+pathlib
+requests
+pandas
+pandas-io
+numpy
+altair
+
