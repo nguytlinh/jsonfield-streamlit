@@ -45,7 +45,7 @@ st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship
 
 # st.cache speeds things up by holding data in cache
 
-#@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True)
 
 # get the data function 
 def get_data(link):
