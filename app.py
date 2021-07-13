@@ -139,6 +139,59 @@ def draw_chart(col_name, count_name, origdf):
     )
     st.write(chart+text) 
 
+def draw_mt_chart(origdf):
+    cf_count = get_mt_count(origdf, 'mt_cf')
+    sog_count = get_mt_count(origdf, 'mt_sog')
+    csog_count = get_mt_count(origdf, 'mt_csog')
+    cd_count = get_mt_count(origdf, 'mt_cd')
+    fg_count = get_mt_count(origdf, 'mt_fg')
+    id_count = get_mt_count(origdf, 'mt_id')
+    nid_count = get_mt_count(origdf, 'mt_nid')
+    pe_count = get_mt_count(origdf, 'mt_pe')
+    cad_count = get_mt_count(origdf, 'mt_cad')
+    int_count = get_mt_count(origdf, 'mt_int')
+    hr_count = get_mt_count(origdf, 'mt_hr')
+
+    mt_dict = {'types':['Cantus firmus', 'Soggetto', 'Counter-soggetto', 'Contrapuntal duo', 'Fuga', 'ID', 'NID', 'PEN', 'Cadence', 'Interval Patterns', 'Homorhythm'],
+                'count': [cf_count, sog_count, csog_count, cd_count, fg_count, id_count, nid_count, pe_count, cad_count, int_count, hr_count ]}
+    df_mt = pd.DataFrame(data=mt_dict)
+    chart_mt = alt.Chart(df_mt).mark_bar().encode(
+        x = 'count',
+        y = 'types',
+    )
+    text_mt = chart_mt.mark_text(
+        align='left',
+        baseline='middle',
+        dx=3
+    ).encode(
+        text = 'count'
+    )
+    st.write(chart_mt+text_mt)
+
+def draw_rt_chart(origdf):
+    qt_count = get_mt_count(origdf, 'rt_q')
+    tm_count = get_mt_count(origdf, 'rt_tm')
+    tnm_count = get_mt_count(origdf, 'rt_tnm')
+    om_count = get_mt_count(origdf, 'rt_om')
+    nm_count = get_mt_count(origdf, 'rt_nm')
+
+    rt_dict = {'types':['Quotation', 'Mechanical transformation', 'Non-mechanical transformation', 'Omission', 'New Materia'],
+                'count': [qt_count, tm_count, tnm_count, om_count, nm_count]}
+    df_rt = pd.DataFrame(data=rt_dict)
+    chart_rt = alt.Chart(df_rt).mark_bar().encode(
+        x = 'count',
+        y = 'types',
+    )
+    text_rt = chart_rt.mark_text(
+        align='left',
+        baseline='middle',
+        dx=3
+    ).encode(
+        text = 'count'
+    )
+    st.write(chart_rt+text_rt)
+    
+
 def get_subtype_count(origdf, mt, stname):
     subtype = (origdf['mt_' + mt + '_' + stname] == 1)
     subtype_count = origdf[subtype].shape[0]
@@ -148,6 +201,11 @@ def get_cdtype_count(origdf, stname):
     subtype = (origdf['mt_cad_type'].isin(stname))
     subtype_count = origdf[subtype].shape[0]
     return int(subtype_count)
+
+def get_mt_count(origdf, mtname):
+    musicaltype = (origdf[mtname] == 1)
+    musicaltype_count = origdf[musicaltype].shape[0]
+    return int(musicaltype_count)
 
 def get_subtype_charts(selected_type, origdf):
     if selected_type.lower() == "cadence":
@@ -355,7 +413,7 @@ if (order == 'Piece then Musical Type'):
     showtype = st.checkbox('By musical type', value=False)
     showpiece = st.checkbox('By piece', value=False)
     if showtype:
-        draw_chart("musical_type", "counttype", mt_sub)
+        draw_mt_chart(mt_full)
     if showpiece:
         draw_chart("piece_piece_id", "countpiece", mt_sub)
     
@@ -395,7 +453,7 @@ else:
     showtype = st.checkbox('By musical type', value=False)
     showpiece = st.checkbox('By piece', value=False)
     if showtype:
-        draw_chart("musical_type", "counttype", piece_sub)
+        draw_mt_chart(piece_full)
     if showpiece:
         draw_chart("piece_piece_id", "countpiece", piece_sub)
 
@@ -456,7 +514,7 @@ if (order == 'Pieces then Relationship Type'):
     showmpiece = st.checkbox('By model observation piece', value=False)
     showdpiece = st.checkbox('By derivative observation piece', value=False)
     if showrtype:
-        draw_chart("relationship_type", "counttype", rt_sub)
+        draw_rt_chart(rt_full)
         
         st.write('Subtype chart for Quotation')
         #subtypes of quotation
@@ -528,7 +586,7 @@ else:
     if showdpiece:
         draw_chart("derivative_observation_piece_piece_id", "countdpiece", dpiece_sub)
     if showrtype:
-        draw_chart("relationship_type", "counttype", dpiece_sub)
+        draw_rt_chart(dpiece_full)
         st.write('Subtype chart for Quotation')
         #subtypes of quotation
         q_chosen = (dpiece_full['rt_q'] == 1)
