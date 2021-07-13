@@ -130,7 +130,14 @@ def draw_chart(col_name, count_name, origdf):
         x = count_name,
         y = col_name,
     )
-    st.write(chart) 
+    text = chart.mark_text(
+        align='left',
+        baseline='middle',
+        dx=3
+    ).encode(
+        text = count_name
+    )
+    st.write(chart+text) 
 
 def get_subtype_count(origdf, mt, stname):
     subtype = (origdf['mt_' + mt + '_' + stname] == 1)
@@ -158,7 +165,15 @@ def get_subtype_charts(selected_type, origdf):
             x = 'countcdtypes',
             y = 'mt_cad_type',
         )
-        st.write(chart_cd)
+        text_cd = chart_cd.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'countcdtypes'
+        )
+        st.write(chart_cd+text_cd)
+
         draw_chart('mt_cad_tone', 'countcdtones', cd_full)
         
         cd_full_1 = cd_full.copy()
@@ -192,7 +207,14 @@ def get_subtype_charts(selected_type, origdf):
             x = 'count',
             y = 'Subtypes',
         )
-        st.write(chart_fg)
+        text_fg = chart_fg.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_fg+text_fg)
 
     if selected_type.lower() == "periodic entry":
         pe_chosen = (origdf['mt_pe'] == 1)
@@ -212,7 +234,14 @@ def get_subtype_charts(selected_type, origdf):
             x = 'count',
             y = 'Subtypes',
         )
-        st.write(chart_pe)
+        text_pe = chart_pe.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_pe+text_pe)
 
     if selected_type.lower() == "imitative duo":
         id_chosen = (origdf['mt_id'] == 1)
@@ -230,7 +259,14 @@ def get_subtype_charts(selected_type, origdf):
             x = 'count',
             y = 'Subtypes',
         )
-        st.write(chart_id)
+        text_id = chart_id.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_id+text_id)
 
     if selected_type.lower() == "non-imitative duo":
         nid_chosen = (origdf['mt_nid'] == 1)
@@ -248,7 +284,14 @@ def get_subtype_charts(selected_type, origdf):
             x = 'count',
             y = 'Subtypes',
         )
-        st.write(chart_nid)
+        text_nid = chart_nid.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_nid+text_nid)
 
     if selected_type.lower() == "homorhythm":
         hr_chosen = (origdf['mt_hr'] == 1)
@@ -266,7 +309,14 @@ def get_subtype_charts(selected_type, origdf):
             x = 'count',
             y = 'Subtypes',
         )
-        st.write(chart_hr)
+        text_hr = chart_hr.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_hr+text_hr)
 
 
 
@@ -302,8 +352,8 @@ if (order == 'Piece then Musical Type'):
 
 
     st.subheader("Graphical representation of result")
-    showtype = st.checkbox('By musical types', value=False)
-    showpiece = st.checkbox('By pieces', value=False)
+    showtype = st.checkbox('By musical type', value=False)
+    showpiece = st.checkbox('By piece', value=False)
     if showtype:
         draw_chart("musical_type", "counttype", mt_sub)
     if showpiece:
@@ -342,8 +392,8 @@ else:
         download_csv(piece_full, userinput)
 
     st.subheader("Graphical representation of result")
-    showtype = st.checkbox('By musical types', value=False)
-    showpiece = st.checkbox('By pieces', value=False)
+    showtype = st.checkbox('By musical type', value=False)
+    showpiece = st.checkbox('By piece', value=False)
     if showtype:
         draw_chart("musical_type", "counttype", piece_sub)
     if showpiece:
@@ -402,11 +452,38 @@ if (order == 'Pieces then Relationship Type'):
         download_csv(rt_full, userinput_r)
 
     st.subheader("Graphical representation of result")
-    showrtype = st.checkbox('By relationship types', value=False)
-    showmpiece = st.checkbox('By model observation pieces', value=False)
-    showdpiece = st.checkbox('By derivative observation pieces', value=False)
+    showrtype = st.checkbox('By relationship type', value=False)
+    showmpiece = st.checkbox('By model observation piece', value=False)
+    showdpiece = st.checkbox('By derivative observation piece', value=False)
     if showrtype:
         draw_chart("relationship_type", "counttype", rt_sub)
+        
+        st.write('Subtype chart for Quotation')
+        #subtypes of quotation
+        q_chosen = (rt_full['rt_q'] == 1)
+        q_full = rt_full[q_chosen]
+        qx = (q_full['rt_q_x'] == 1)
+        qx_count = q_full[qx].shape[0]
+
+        qm = (q_full['rt_q_monnayage'] == 1)
+        qm_count = q_full[qm].shape[0]
+
+        q_dict = {'Subtypes':['exact', 'monnayage'],
+                    'count': [int(qx_count), int(qm_count)]}
+        df_q = pd.DataFrame(data=q_dict)
+        chart_q = alt.Chart(df_q).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        text_q = chart_q.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_q+text_q)
+
     if showmpiece:
         draw_chart("model_observation_piece_piece_id", "countmpiece", rt_sub)
     if showdpiece:
@@ -443,13 +520,38 @@ else:
         download_csv(dpiece_full, userinput_r)
 
     st.subheader("Graphical representation of result")
-    showrtype = st.checkbox('By relationship types', value=False)
-    showmpiece = st.checkbox('By model observation pieces', value=False)
-    showdpiece = st.checkbox('By derivative observation pieces', value=False)
+    showrtype = st.checkbox('By relationship type', value=False)
+    showmpiece = st.checkbox('By model observation piece', value=False)
+    showdpiece = st.checkbox('By derivative observation piece', value=False)
     if showmpiece:
         draw_chart("model_observation_piece_piece_id", "countmpiece", dpiece_sub)
     if showdpiece:
         draw_chart("derivative_observation_piece_piece_id", "countdpiece", dpiece_sub)
     if showrtype:
         draw_chart("relationship_type", "counttype", dpiece_sub)
+        st.write('Subtype chart for Quotation')
+        #subtypes of quotation
+        q_chosen = (dpiece_full['rt_q'] == 1)
+        q_full = dpiece_full[q_chosen]
+        qx = (q_full['rt_q_x'] == 1)
+        qx_count = q_full[qx].shape[0]
+
+        qm = (q_full['rt_q_monnayage'] == 1)
+        qm_count = q_full[qm].shape[0]
+
+        q_dict = {'Subtypes':['exact', 'monnayage'],
+                    'count': [int(qx_count), int(qm_count)]}
+        df_q = pd.DataFrame(data=q_dict)
+        chart_q = alt.Chart(df_q).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        text_q = chart_q.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_q+text_q)
 
