@@ -5,4 +5,4 @@ pandas
 pandas-io
 numpy
 altair
-base64
+
