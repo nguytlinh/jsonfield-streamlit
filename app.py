@@ -56,15 +56,17 @@ def get_data(link):
 
 
 df = get_data('http://crimproject.org/data/observations/')
-df.rename(columns={'piece.piece_id':'piece_piece_id'}, inplace=True)
+df.rename(columns={'piece.piece_id':'piece_piece_id',
+                    'observer.name' : 'observer_name'}, inplace=True)
 
 df_r = get_data('http://crimproject.org/data/relationships/')
 df_r.rename(columns={'piece.piece_id':'piece_piece_id', 
+                    'observer.name':'observer_name',
                     'model_observation.piece.piece_id':'model_observation_piece_piece_id',
                     'derivative_observation.piece.piece_id':'derivative_observation_piece_piece_id',}, inplace=True)
 
-select_data = df[["id", "observer.name", "piece_piece_id", "musical_type"]]
-select_data_r = df_r[['id', 'observer.name', 'model_observation_piece_piece_id', 'derivative_observation_piece_piece_id', 'relationship_type']]
+select_data = df[["id", "observer_name", "piece_piece_id", "musical_type"]]
+select_data_r = df_r[['id', 'observer_name', 'model_observation_piece_piece_id', 'derivative_observation_piece_piece_id', 'relationship_type']]
 
 
 # Sidebar options for _all_ data of a particular type
@@ -99,24 +101,10 @@ if st.button('Download Complete Dataset as CSV'):
 
 
 
-# These are the filters in the main window 
-#st.header("Filter Views")
-#st.write('Use the following dialogues to filter for one or more Observer, Piece, Observation, or Musical Type')
-#st.write('To download a CSV file with the given results, provide a filename as requested, then click the download button')
+def download_csv(origdf, filename):
+    tmp_download_link = download_link(origdf, filename, 'Click here to download your data!')
+    st.markdown(tmp_download_link, unsafe_allow_html=True)
 
-
-#st.subheader("Select Observations by Observer")
-
-#s1 = st.text_input('Name of Observer file for download (must include ".csv")')
-# Button to download CSV of results 
-#if st.button('Download Observer Results as CSV'):
-#    #s = st.text_input('Enter text here')
-#    tmp_download_link = download_link(select_data_1, s1, 'Click here to download your data!')
-#    st.markdown(tmp_download_link, unsafe_allow_html=True)
-
-
-
-#st.markdown("---")
 
 def filter_by(filterer, select_data, full_data, key):
     options = select_data[filterer].unique().tolist()
@@ -158,6 +146,7 @@ def get_subtype_charts(selected_type, origdf):
     if selected_type.lower() == "cadence":
         cd_chosen = (origdf['mt_cad'] == 1)
         cd_full = origdf[cd_chosen]
+        #separate cd type chart (3 types and counts of each)
         cd_dict = {'mt_cad_type':['authentic','phrygian','plagal'],
                     'countcdtypes': [ 
                         get_cdtype_count(cd_full, ['authentic', 'Authentic']),
@@ -171,6 +160,20 @@ def get_subtype_charts(selected_type, origdf):
         )
         st.write(chart_cd)
         draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+        
+        cd_full_1 = cd_full.copy()
+        cd_full_1['mt_cad_type'].replace({'Authentic':'authentic', 'Phrygian':'phrygian', 'Plagal':'plagal'}, inplace=True) 
+        cd_full_1['count'] = cd_full_1.groupby('mt_cad_type')['mt_cad_type'].transform('count')
+        #distribution plot for type and tone
+        color_plot = alt.Chart(cd_full_1).mark_circle(size=60).encode(
+            x='piece_piece_id',
+            y='mt_cad_type',
+            color='mt_cad_tone',
+            tooltip=['id', 'observer_name', 'mt_cad_type', 'mt_cad_tone']
+        )
+        st.write(color_plot)
+
+
 
     if selected_type.lower() == "fuga":
         fg_chosen = (origdf['mt_fg'] == 1)
@@ -190,7 +193,7 @@ def get_subtype_charts(selected_type, origdf):
             y = 'Subtypes',
         )
         st.write(chart_fg)
-    
+
     if selected_type.lower() == "periodic entry":
         pe_chosen = (origdf['mt_pe'] == 1)
         pe_full = origdf[pe_chosen]
@@ -289,15 +292,23 @@ if (order == 'Piece then Musical Type'):
     #st.write(mt_full)
     st.write(mt_sub)
 
-    st.write("Graphical representation of result")
-    showtype = st.checkbox('By musical types')
-    showpiece = st.checkbox('By pieces')
+    st.subheader('Download Filtered Results as CSV')
+    userinput = st.text_input('Name of file for download (must include ".csv")', key='1')
+    if st.button('Download without type details', key='11'):
+        download_csv(mt_sub, userinput)
+    st.write('or')
+    if st.button('Download with type details', key='12'):
+        download_csv(mt_full, userinput)
+
+
+    st.subheader("Graphical representation of result")
+    showtype = st.checkbox('By musical types', value=False)
+    showpiece = st.checkbox('By pieces', value=False)
     if showtype:
         draw_chart("musical_type", "counttype", mt_sub)
     if showpiece:
         draw_chart("piece_piece_id", "countpiece", mt_sub)
     
-    st.write('Subtype charts for filtered results') 
     showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
     if showfiltered:
         selected_types = mt_sub['musical_type'].unique().tolist()
@@ -322,15 +333,22 @@ else:
     st.markdown('Resulting observations:')
     st.write(piece_sub)
 
-    st.write("Graphical representation of result")
-    showtype = st.checkbox('By musical types')
-    showpiece = st.checkbox('By pieces')
+    st.subheader('Download Filtered Results as CSV')
+    userinput = st.text_input('Name of file for download (must include ".csv")', key='2')
+    if st.button('Download without type details', key='9'):
+        download_csv(piece_sub, userinput)
+    st.write('or')
+    if st.button('Download with type details', key='10'):
+        download_csv(piece_full, userinput)
+
+    st.subheader("Graphical representation of result")
+    showtype = st.checkbox('By musical types', value=False)
+    showpiece = st.checkbox('By pieces', value=False)
     if showtype:
         draw_chart("musical_type", "counttype", piece_sub)
     if showpiece:
         draw_chart("piece_piece_id", "countpiece", piece_sub)
 
-    st.write('Subtype charts for filtered results') 
     showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
     if showfiltered:
         selected_types = piece_sub['musical_type'].unique().tolist()
@@ -375,10 +393,18 @@ if (order == 'Pieces then Relationship Type'):
     #st.write(rt_full)
     st.write(rt_sub)
 
-    st.write("Graphical representation of result")
-    showrtype = st.checkbox('By relationship types')
-    showmpiece = st.checkbox('By model observation pieces')
-    showdpiece = st.checkbox('By derivative observation pieces')
+    st.subheader('Download Filtered Results as CSV')
+    userinput_r = st.text_input('Name of file for download (must include ".csv")', key='3')
+    if st.button('Download without type details', key='7'):
+        download_csv(rt_sub, userinput_r)
+    st.write('or')
+    if st.button('Download with type details', key='8'):
+        download_csv(rt_full, userinput_r)
+
+    st.subheader("Graphical representation of result")
+    showrtype = st.checkbox('By relationship types', value=False)
+    showmpiece = st.checkbox('By model observation pieces', value=False)
+    showdpiece = st.checkbox('By derivative observation pieces', value=False)
     if showrtype:
         draw_chart("relationship_type", "counttype", rt_sub)
     if showmpiece:
@@ -408,10 +434,18 @@ else:
     st.markdown('Resulting relationships:')
     st.write(dpiece_sub)
 
-    st.write("Graphical representation of result")
-    showrtype = st.checkbox('By relationship types')
-    showmpiece = st.checkbox('By model observation pieces')
-    showdpiece = st.checkbox('By derivative observation pieces')
+    st.subheader('Download Filtered Results as CSV')
+    userinput_r = st.text_input('Name of file for download (must include ".csv")', key='4')
+    if st.button('Download without type details', key='5'):
+        download_csv(dpiece_sub, userinput_r)
+    st.write('or')
+    if st.button('Download with type details', key='6'):
+        download_csv(dpiece_full, userinput_r)
+
+    st.subheader("Graphical representation of result")
+    showrtype = st.checkbox('By relationship types', value=False)
+    showmpiece = st.checkbox('By model observation pieces', value=False)
+    showdpiece = st.checkbox('By derivative observation pieces', value=False)
     if showmpiece:
         draw_chart("model_observation_piece_piece_id", "countmpiece", dpiece_sub)
     if showdpiece:
