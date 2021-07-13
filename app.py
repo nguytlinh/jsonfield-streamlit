@@ -290,15 +290,21 @@ if (order == 'Piece then Musical Type'):
     st.write(mt_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("musical_type", "counttype", mt_sub)
-    draw_chart("piece_piece_id", "countpiece", mt_sub)
+    showtype = st.checkbox('By musical types')
+    showpiece = st.checkbox('By pieces')
+    if showtype:
+        draw_chart("musical_type", "counttype", mt_sub)
+    if showpiece:
+        draw_chart("piece_piece_id", "countpiece", mt_sub)
     
     st.write('Subtype charts for filtered results') 
-    selected_types = mt_sub['musical_type'].unique().tolist()
-    for mt in selected_types:
-        if str(mt).lower() in ['cadence', 'fuga', 'periodic entry', 'imitative duo', 'non-imitative duo', 'homorythm']:
-            st.write('Type: ' + str(mt))
-            get_subtype_charts(mt, mt_full)
+    showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
+    if showfiltered:
+        selected_types = mt_sub['musical_type'].unique().tolist()
+        for mt in selected_types:
+            if str(mt).lower() in ['cadence', 'fuga', 'periodic entry', 'imitative duo', 'non-imitative duo', 'homorythm']:
+                st.write('Type: ' + str(mt))
+                get_subtype_charts(mt, mt_full)
 
 else:
     #filter by musical type
@@ -317,24 +323,31 @@ else:
     st.write(piece_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("musical_type", "counttype", piece_sub)
-    #debug in progress for piece
-    draw_chart("piece_piece_id", "countpiece", piece_sub)
+    showtype = st.checkbox('By musical types')
+    showpiece = st.checkbox('By pieces')
+    if showtype:
+        draw_chart("musical_type", "counttype", piece_sub)
+    if showpiece:
+        draw_chart("piece_piece_id", "countpiece", piece_sub)
 
     st.write('Subtype charts for filtered results') 
-    selected_types = piece_sub['musical_type'].unique().tolist()
-    for mt in selected_types:
-        if str(mt).lower() in ['cadence', 'fuga', 'periodic entry', 'imitative duo', 'non-imitative duo', 'homorythm']:
-            st.write('Type: ' + str(mt))
-            get_subtype_charts(mt, piece_full)
+    showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
+    if showfiltered:
+        selected_types = piece_sub['musical_type'].unique().tolist()
+        for mt in selected_types:
+            if str(mt).lower() in ['cadence', 'fuga', 'periodic entry', 'imitative duo', 'non-imitative duo', 'homorythm']:
+                st.write('Type: ' + str(mt))
+                get_subtype_charts(mt, piece_full)
 
 
 st.markdown("---")
-st.header("Subtype Charts All Data")
+st.header("Subtype Charts All Data") 
 
-type_options = ['Cadence', 'Fuga', 'Periodic Entry', 'Imitative Duo', 'Non-Imitative Duo', 'Homorythm']
-selected_type = st.radio('', type_options, key = 'g')
-get_subtype_charts(selected_type, df)
+showall = st.checkbox('Show subtype charts for all data', value=False)
+if showall:
+    type_options = ['Cadence', 'Fuga', 'Periodic Entry', 'Imitative Duo', 'Non-Imitative Duo', 'Homorythm']
+    selected_type = st.radio('', type_options, key = 'g')
+    get_subtype_charts(selected_type, df)
 
 
 st.markdown("---")
@@ -363,9 +376,15 @@ if (order == 'Pieces then Relationship Type'):
     st.write(rt_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("relationship_type", "counttype", rt_sub)
-    draw_chart("model_observation_piece_piece_id", "countmpiece", rt_sub)
-    draw_chart("derivative_observation_piece_piece_id", "countdpiece", rt_sub)
+    showrtype = st.checkbox('By relationship types')
+    showmpiece = st.checkbox('By model observation pieces')
+    showdpiece = st.checkbox('By derivative observation pieces')
+    if showrtype:
+        draw_chart("relationship_type", "counttype", rt_sub)
+    if showmpiece:
+        draw_chart("model_observation_piece_piece_id", "countmpiece", rt_sub)
+    if showdpiece:
+        draw_chart("derivative_observation_piece_piece_id", "countdpiece", rt_sub)
 
 else:
     #filter by musical type
@@ -390,7 +409,13 @@ else:
     st.write(dpiece_sub)
 
     st.write("Graphical representation of result")
-    draw_chart("model_observation_piece_piece_id", "countmpiece", dpiece_sub)
-    draw_chart("derivative_observation_piece_piece_id", "countdpiece", rt_sub)
-    draw_chart("relationship_type", "counttype", dpiece_sub)
+    showrtype = st.checkbox('By relationship types')
+    showmpiece = st.checkbox('By model observation pieces')
+    showdpiece = st.checkbox('By derivative observation pieces')
+    if showmpiece:
+        draw_chart("model_observation_piece_piece_id", "countmpiece", dpiece_sub)
+    if showdpiece:
+        draw_chart("derivative_observation_piece_piece_id", "countdpiece", dpiece_sub)
+    if showrtype:
+        draw_chart("relationship_type", "counttype", dpiece_sub)
 
