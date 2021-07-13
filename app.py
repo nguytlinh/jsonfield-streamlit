@@ -149,6 +149,106 @@ def get_subtype_count(origdf, mt, stname):
     subtype_count = origdf[subtype].shape[0]
     return int(subtype_count)
 
+def get_subtype_charts(selected_type, origdf):
+    if selected_type == "Cadence":
+        cd_chosen = (origdf['mt_cad'] == 1)
+        cd_full = origdf[cd_chosen]
+        draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+        draw_chart('mt_cad_tone', 'countcdtones', cd_full)
+
+    if selected_type == "Fuga":
+        fg_chosen = (origdf['mt_fg'] == 1)
+        fg_full = origdf[fg_chosen]
+        fg_dict = {'Subtypes':['periodic', 'strict', 'flexed', 'sequential', 'inverted', 'retrograde'],
+                    'count': [
+                        get_subtype_count(fg_full, 'fg', 'periodic'), 
+                        get_subtype_count(fg_full, 'fg', 'strict'), 
+                        get_subtype_count(fg_full, 'fg', 'flexed'), 
+                        get_subtype_count(fg_full, 'fg', 'sequential'), 
+                        get_subtype_count(fg_full, 'fg', 'inverted'), 
+                        get_subtype_count(fg_full, 'fg', 'retrograde'),
+                    ]}
+        df_fg = pd.DataFrame(data=fg_dict)
+        chart_fg = alt.Chart(df_fg).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        st.write(chart_fg)
+    
+    if selected_type == "Periodic Entry":
+        pe_chosen = (origdf['mt_pe'] == 1)
+        pe_full = origdf[pe_chosen]
+
+        pe_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'sequential', 'added entry', 'invertible'],
+                    'count': [ 
+                        get_subtype_count(pe_full, 'pe', 'strict'), 
+                        get_subtype_count(pe_full, 'pe', 'flexed'), 
+                        get_subtype_count(pe_full, 'pe', 'flt'),
+                        get_subtype_count(pe_full, 'pe', 'sequential'), 
+                        get_subtype_count(pe_full, 'pe', 'added'), 
+                        get_subtype_count(pe_full, 'pe', 'invertible'), 
+                    ]}
+        df_pe = pd.DataFrame(data=pe_dict)
+        chart_pe = alt.Chart(df_pe).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        st.write(chart_pe)
+
+    if selected_type == "Imitative Duo":
+        id_chosen = (origdf['mt_id'] == 1)
+        id_full = origdf[id_chosen]
+    
+        id_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'invertible'],
+                    'count': [ 
+                        get_subtype_count(id_full, 'id', 'strict'), 
+                        get_subtype_count(id_full, 'id', 'flexed'), 
+                        get_subtype_count(id_full, 'id', 'flt'),
+                        get_subtype_count(id_full, 'id', 'invertible'), 
+                    ]}
+        df_id = pd.DataFrame(data=id_dict)
+        chart_id = alt.Chart(df_id).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        st.write(chart_id)
+
+    if selected_type == "Non-Imitative Duo":
+        nid_chosen = (origdf['mt_nid'] == 1)
+        nid_full = origdf[nid_chosen]
+
+        nid_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'invertible'],
+                    'count': [ 
+                        get_subtype_count(nid_full, 'nid', 'strict'), 
+                        get_subtype_count(nid_full, 'nid', 'flexed'), 
+                        get_subtype_count(nid_full, 'nid', 'flt'),
+                        get_subtype_count(nid_full, 'nid', 'invertible'), 
+                    ]}
+        df_nid = pd.DataFrame(data=nid_dict)
+        chart_nid = alt.Chart(df_nid).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        st.write(chart_nid)
+
+    if selected_type == "Homorhythm":
+        hr_chosen = (origdf['mt_hr'] == 1)
+        hr_full = origdf[hr_chosen]
+
+        hr_dict = {'Subtypes':['simple', 'staggered', 'sequential', 'fauxbourdon'],
+                    'count': [ 
+                        get_subtype_count(hr_full, 'hr', 'simple'), 
+                        get_subtype_count(hr_full, 'hr', 'staggered'), 
+                        get_subtype_count(hr_full, 'hr', 'sequential'),
+                        get_subtype_count(hr_full, 'hr', 'fauxbourdon'), 
+                    ]}
+        df_hr = pd.DataFrame(data=hr_dict)
+        chart_hr = alt.Chart(df_hr).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        st.write(chart_hr)
+
 
 
 st.markdown("---")
@@ -170,13 +270,18 @@ if (order == 'Piece then Musical Type'):
     mt_full = mt_frames[0]
     mt_sub = mt_frames[1]
     st.markdown('Resulting observations:')
-    st.write(mt_full)
-    #st.write(mt_sub)
+    #st.write(mt_full)
+    st.write(mt_sub)
 
     st.write("Graphical representation of result")
     draw_chart("musical_type", "counttype", mt_sub)
     draw_chart("piece_piece_id", "countpiece", mt_sub)
     
+    st.write('Subtype charts for filtered results') 
+    selected_types = mt_sub['musical_type'].unique().tolist()
+    for mt in selected_types:
+        st.write('Type: ' + str(mt))
+        get_subtype_charts(mt, mt_full)
 
 else:
     #filter by musical type
@@ -205,122 +310,7 @@ st.header("Subtype Charts All Data")
 
 type_options = ['Cadence', 'Fuga', 'Periodic Entry', 'Imitative Duo', 'Non-Imitative Duo', 'Homorythm']
 selected_type = st.radio('', type_options, key = 'g')
-
-
-if selected_type == "Cadence":
-    cd_chosen = (df['mt_cad'] == 1)
-    cd_sub = select_data[cd_chosen]
-    cd_full = df[cd_chosen]
-    #st.write(cd_full)
-
-    draw_chart('mt_cad_type', 'countcdtypes', cd_full)
-    draw_chart('mt_cad_tone', 'countcdtones', cd_full)
-
-
-
-if selected_type == "Fuga":
-    fg_chosen = (df['mt_fg'] == 1)
-    fg_sub = select_data[fg_chosen]
-    fg_full = df[fg_chosen]
-    #st.write(fg_full)
-
-    fg_dict = {'Subtypes':['periodic', 'strict', 'flexed', 'sequential', 'inverted', 'retrograde'],
-                'count': [
-                    get_subtype_count(fg_full, 'fg', 'periodic'), 
-                    get_subtype_count(fg_full, 'fg', 'strict'), 
-                    get_subtype_count(fg_full, 'fg', 'flexed'), 
-                    get_subtype_count(fg_full, 'fg', 'sequential'), 
-                    get_subtype_count(fg_full, 'fg', 'inverted'), 
-                    get_subtype_count(fg_full, 'fg', 'retrograde'),
-                ]}
-    df_fg = pd.DataFrame(data=fg_dict)
-    chart_fg = alt.Chart(df_fg).mark_bar().encode(
-        x = 'count',
-        y = 'Subtypes',
-    )
-    st.write(chart_fg)
-
-    
-    
-if selected_type == "Periodic Entry":
-    pe_chosen = (df['mt_pe'] == 1)
-    pe_sub = select_data[pe_chosen]
-    pe_full = df[pe_chosen]
-    #st.write(pe_full)
-
-    pe_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'sequential', 'added entry', 'invertible'],
-                'count': [ 
-                    get_subtype_count(pe_full, 'pe', 'strict'), 
-                    get_subtype_count(pe_full, 'pe', 'flexed'), 
-                    get_subtype_count(pe_full, 'pe', 'flt'),
-                    get_subtype_count(pe_full, 'pe', 'sequential'), 
-                    get_subtype_count(pe_full, 'pe', 'added'), 
-                    get_subtype_count(pe_full, 'pe', 'invertible'), 
-                ]}
-    df_pe = pd.DataFrame(data=pe_dict)
-    chart_pe = alt.Chart(df_pe).mark_bar().encode(
-        x = 'count',
-        y = 'Subtypes',
-    )
-    st.write(chart_pe)
-
-if selected_type == "Imitative Duo":
-    id_chosen = (df['mt_id'] == 1)
-    id_sub = select_data[id_chosen]
-    id_full = df[id_chosen]
-    
-    id_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'invertible'],
-                'count': [ 
-                    get_subtype_count(id_full, 'id', 'strict'), 
-                    get_subtype_count(id_full, 'id', 'flexed'), 
-                    get_subtype_count(id_full, 'id', 'flt'),
-                    get_subtype_count(id_full, 'id', 'invertible'), 
-                ]}
-    df_id = pd.DataFrame(data=id_dict)
-    chart_id = alt.Chart(df_id).mark_bar().encode(
-        x = 'count',
-        y = 'Subtypes',
-    )
-    st.write(chart_id)
-
-if selected_type == "Non-Imitative Duo":
-    nid_chosen = (df['mt_nid'] == 1)
-    nid_sub = select_data[nid_chosen]
-    nid_full = df[nid_chosen]
-
-    nid_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'invertible'],
-                'count': [ 
-                    get_subtype_count(nid_full, 'nid', 'strict'), 
-                    get_subtype_count(nid_full, 'nid', 'flexed'), 
-                    get_subtype_count(nid_full, 'nid', 'flt'),
-                    get_subtype_count(nid_full, 'nid', 'invertible'), 
-                ]}
-    df_nid = pd.DataFrame(data=nid_dict)
-    chart_nid = alt.Chart(df_nid).mark_bar().encode(
-        x = 'count',
-        y = 'Subtypes',
-    )
-    st.write(chart_nid)
-
-if selected_type == "Homorhythm":
-    hr_chosen = (df['mt_hr'] == 1)
-    hr_sub = select_data[hr_chosen]
-    hr_full = df[hr_chosen]
-
-    hr_dict = {'Subtypes':['simple', 'staggered', 'sequential', 'fauxbourdon'],
-                'count': [ 
-                    get_subtype_count(hr_full, 'hr', 'simple'), 
-                    get_subtype_count(hr_full, 'hr', 'staggered'), 
-                    get_subtype_count(hr_full, 'hr', 'sequential'),
-                    get_subtype_count(hr_full, 'hr', 'fauxbourdon'), 
-                ]}
-    df_hr = pd.DataFrame(data=hr_dict)
-    chart_hr = alt.Chart(df_hr).mark_bar().encode(
-        x = 'count',
-        y = 'Subtypes',
-    )
-    st.write(chart_hr)
-    
+get_subtype_charts(selected_type, df)
 
 
 st.markdown("---")
