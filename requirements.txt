@@ -5,5 +5,4 @@ pandas
 pandas-io
 numpy
 altair
-SessionState
 base64
