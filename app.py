@@ -149,14 +149,30 @@ def get_subtype_count(origdf, mt, stname):
     subtype_count = origdf[subtype].shape[0]
     return int(subtype_count)
 
+def get_cdtype_count(origdf, stname):
+    subtype = (origdf['mt_cad_type'].isin(stname))
+    subtype_count = origdf[subtype].shape[0]
+    return int(subtype_count)
+
 def get_subtype_charts(selected_type, origdf):
-    if selected_type == "Cadence":
+    if selected_type.lower() == "cadence":
         cd_chosen = (origdf['mt_cad'] == 1)
         cd_full = origdf[cd_chosen]
-        draw_chart('mt_cad_type', 'countcdtypes', cd_full)
+        cd_dict = {'mt_cad_type':['authentic','phrygian','plagal'],
+                    'countcdtypes': [ 
+                        get_cdtype_count(cd_full, ['authentic', 'Authentic']),
+                        get_cdtype_count(cd_full, ['phrygian', 'Phrygian']),
+                        get_cdtype_count(cd_full, ['plagal', 'Plagal']),
+                    ]}
+        df_cd = pd.DataFrame(data=cd_dict)
+        chart_cd = alt.Chart(df_cd).mark_bar().encode(
+            x = 'countcdtypes',
+            y = 'mt_cad_type',
+        )
+        st.write(chart_cd)
         draw_chart('mt_cad_tone', 'countcdtones', cd_full)
 
-    if selected_type == "Fuga":
+    if selected_type.lower() == "fuga":
         fg_chosen = (origdf['mt_fg'] == 1)
         fg_full = origdf[fg_chosen]
         fg_dict = {'Subtypes':['periodic', 'strict', 'flexed', 'sequential', 'inverted', 'retrograde'],
@@ -175,7 +191,7 @@ def get_subtype_charts(selected_type, origdf):
         )
         st.write(chart_fg)
     
-    if selected_type == "Periodic Entry":
+    if selected_type.lower() == "periodic entry":
         pe_chosen = (origdf['mt_pe'] == 1)
         pe_full = origdf[pe_chosen]
 
@@ -195,7 +211,7 @@ def get_subtype_charts(selected_type, origdf):
         )
         st.write(chart_pe)
 
-    if selected_type == "Imitative Duo":
+    if selected_type.lower() == "imitative duo":
         id_chosen = (origdf['mt_id'] == 1)
         id_full = origdf[id_chosen]
     
@@ -213,7 +229,7 @@ def get_subtype_charts(selected_type, origdf):
         )
         st.write(chart_id)
 
-    if selected_type == "Non-Imitative Duo":
+    if selected_type.lower() == "non-imitative duo":
         nid_chosen = (origdf['mt_nid'] == 1)
         nid_full = origdf[nid_chosen]
 
@@ -231,7 +247,7 @@ def get_subtype_charts(selected_type, origdf):
         )
         st.write(chart_nid)
 
-    if selected_type == "Homorhythm":
+    if selected_type.lower() == "homorhythm":
         hr_chosen = (origdf['mt_hr'] == 1)
         hr_full = origdf[hr_chosen]
 
@@ -280,8 +296,9 @@ if (order == 'Piece then Musical Type'):
     st.write('Subtype charts for filtered results') 
     selected_types = mt_sub['musical_type'].unique().tolist()
     for mt in selected_types:
-        st.write('Type: ' + str(mt))
-        get_subtype_charts(mt, mt_full)
+        if str(mt).lower() in ['cadence', 'fuga', 'periodic entry', 'imitative duo', 'non-imitative duo', 'homorythm']:
+            st.write('Type: ' + str(mt))
+            get_subtype_charts(mt, mt_full)
 
 else:
     #filter by musical type
@@ -303,6 +320,13 @@ else:
     draw_chart("musical_type", "counttype", piece_sub)
     #debug in progress for piece
     draw_chart("piece_piece_id", "countpiece", piece_sub)
+
+    st.write('Subtype charts for filtered results') 
+    selected_types = piece_sub['musical_type'].unique().tolist()
+    for mt in selected_types:
+        if str(mt).lower() in ['cadence', 'fuga', 'periodic entry', 'imitative duo', 'non-imitative duo', 'homorythm']:
+            st.write('Type: ' + str(mt))
+            get_subtype_charts(mt, piece_full)
 
 
 st.markdown("---")
