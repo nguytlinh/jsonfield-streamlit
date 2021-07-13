@@ -234,9 +234,9 @@ def get_subtype_charts(selected_type, origdf):
 
         draw_chart('mt_cad_tone', 'countcdtones', cd_full)
         
+        st.write('Distribution plot for cadence type - hover over any point for information')
         cd_full_1 = cd_full.copy()
         cd_full_1['mt_cad_type'].replace({'Authentic':'authentic', 'Phrygian':'phrygian', 'Plagal':'plagal'}, inplace=True) 
-        cd_full_1['count'] = cd_full_1.groupby('mt_cad_type')['mt_cad_type'].transform('count')
         #distribution plot for type and tone
         color_plot = alt.Chart(cd_full_1).mark_circle(size=60).encode(
             x='piece_piece_id',
