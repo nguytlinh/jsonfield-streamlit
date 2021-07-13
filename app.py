@@ -45,7 +45,7 @@ st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship
 
 # st.cache speeds things up by holding data in cache
 
-@st.cache(allow_output_mutation=True)
+#@st.cache(allow_output_mutation=True)
 
 # get the data function 
 def get_data(link):
@@ -83,7 +83,7 @@ if st.sidebar.checkbox('Show Selected Metadata:  Observer, Type'):
 
 if st.sidebar.checkbox('Show Total Observations per Analyst'):
     st.subheader('Total Observations per Analyst')
-    st.write(df['observer'].value_counts())  
+    st.write(df['observer_name'].value_counts())  
 
 
 if st.sidebar.checkbox('Show Total Observations per Musical Type'):
