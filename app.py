@@ -5,8 +5,8 @@ import requests
 import pandas as pd
 import numpy as np
 from pandas.io.json import json_normalize
-import base64
-import SessionState
+# import base64
+# import SessionState
 
 # sets up function to call Markdown File for "about"
 def read_markdown_file(markdown_file):
@@ -53,8 +53,8 @@ def get_data(link):
     df = pd.json_normalize(data)
     return df 
 
-df = get_data('http://127.0.0.1:8000/data/observations/')
-df_r = get_data('http://127.0.0.1:8000/data/relationships/')
+df = get_data('https://crimproject.org/data/observations')
+df_r = get_data('https://crimproject.org/data/relationships/')
 
 select_data = df[["id", "observer", "musical_type"]]
 select_data_r = df_r[["id", "observer", "relationship_type"]]
