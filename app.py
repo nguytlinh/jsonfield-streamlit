@@ -83,7 +83,7 @@ if st.sidebar.checkbox('Show Selected Metadata:  Observer, Type'):
 
 if st.sidebar.checkbox('Show Total Observations per Analyst'):
     st.subheader('Total Observations per Analyst')
-    st.write(df['observer'].value_counts())  
+    st.write(df['observer_name'].value_counts())  
 
 
 if st.sidebar.checkbox('Show Total Observations per Musical Type'):
