@@ -5,8 +5,8 @@ import requests
 import pandas as pd
 import numpy as np
 from pandas.io.json import json_normalize
-# import base64
-# import SessionState
+import base64
+import SessionState
 
 # sets up function to call Markdown File for "about"
 def read_markdown_file(markdown_file):
