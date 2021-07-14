@@ -39,9 +39,9 @@ def download_link(object_to_download, download_filename, download_link_text):
 
 st.header("CRIM Project Meta Data Viewer")
 
-st.subheader("These tools assemble metadata for about 5000 observations in Citations: The Renaissance Imitation Mass")
+st.subheader("These tools assemble metadata for about 5000 observations and 2500 relationships in Citations: The Renaissance Imitation Mass")
 st.write("Visit the [CRIM Project](https://crimproject.org) and its [Members Pages] (https://sites.google.com/haverford.edu/crim-project/home)")
-st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship-data-viewer.herokuapp.com/)")
+# st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship-data-viewer.herokuapp.com/)")
 
 # st.cache speeds things up by holding data in cache
 
