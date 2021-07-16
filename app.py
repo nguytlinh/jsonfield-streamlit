@@ -39,9 +39,15 @@ def download_link(object_to_download, download_filename, download_link_text):
 
 st.header("CRIM Project Meta Data Viewer")
 
-st.subheader("These tools assemble metadata for about 5000 observations in Citations: The Renaissance Imitation Mass")
-st.write("Visit the [CRIM Project](https://crimproject.org) and its [Members Pages] (https://sites.google.com/haverford.edu/crim-project/home)")
-st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship-data-viewer.herokuapp.com/)")
+st.write("These tools assemble metadata for about 5000 observations and 2500 relationships in Citations: The Renaissance Imitation Mass.")
+st.write("Visit the [CRIM Project](https://crimproject.org) and its [Members Pages] (https://sites.google.com/haverford.edu/crim-project/home).")
+st.write("Use the __checkboxes at the left__ to view detailed and summary data.")
+st.write("Use the __headings below__ to perform faceted searches in __Observations__ and __Relationships__.")
+st.write("For __Observations__ you can begin with __Piece__ or __Musical Type__.")
+st.write("For __Relationships__ you can begin with __Piece__ or __Relationship Type__.")
+st.write("Other tools allow you to create __graphs and charts__ of data for each type and subtype in the CRIM Vocabularies")
+
+# st.write("Also see the [Relationship Metadata Viewer] (https://crim-relationship-data-viewer.herokuapp.com/)")
 
 # st.cache speeds things up by holding data in cache
 
@@ -91,13 +97,13 @@ if st.sidebar.checkbox('Show Total Observations per Musical Type'):
     st.write(df['musical_type'].value_counts())
   
 
-st.subheader("All Data and MEI Views")
-sa = st.text_input('Name of file for download (must include ".csv")')
-## Button to download CSV of results 
-if st.button('Download Complete Dataset as CSV'):
-    #s = st.text_input('Enter text here')
-    tmp_download_link = download_link(df, sa, 'Click here to download your data!')
-    st.markdown(tmp_download_link, unsafe_allow_html=True)
+# st.subheader("All Data and MEI Views")
+# sa = st.text_input('Name of file for download (must include ".csv")')
+# ## Button to download CSV of results 
+# if st.button('Download Complete Dataset as CSV'):
+#     #s = st.text_input('Enter text here')
+#     tmp_download_link = download_link(df, sa, 'Click here to download your data!')
+#     st.markdown(tmp_download_link, unsafe_allow_html=True)
 
 
 
