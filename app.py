@@ -62,17 +62,21 @@ def get_data(link):
 
 
 df = get_data('http://crimproject.org/data/observations/')
-df.rename(columns={'piece.piece_id':'piece_piece_id',
-                    'observer.name' : 'observer_name'}, inplace=True)
+df.rename(columns={'piece.piece_id':'piece_id',
+                    'observer.name' : 'observer_name',
+                    'piece.full_title' : 'title'}, inplace=True)
 
 df_r = get_data('http://crimproject.org/data/relationships/')
-df_r.rename(columns={'piece.piece_id':'piece_piece_id', 
+df_r.rename(columns={'piece.piece_id':'piece_id',
+                    'piece.full_title' : 'title',
                     'observer.name':'observer_name',
-                    'model_observation.piece.piece_id':'model_observation_piece_piece_id',
-                    'derivative_observation.piece.piece_id':'derivative_observation_piece_piece_id',}, inplace=True)
+                    'model_observation.piece.piece_id':'model',
+                    'model_observation.piece.full_title' : 'model_title',
+                    'derivative_observation.piece.piece_id':'derivative',
+                    'derivative_observation.piece.full_title' : 'derivative_title'}, inplace=True)
 
-select_data = df[["id", "observer_name", "piece_piece_id", "musical_type"]]
-select_data_r = df_r[['id', 'observer_name', 'model_observation_piece_piece_id', 'derivative_observation_piece_piece_id', 'relationship_type']]
+select_data = df[["id", "observer_name", "piece_id", "title", "musical_type"]]
+select_data_r = df_r[['id', 'observer_name', 'model', 'model_title', 'derivative', 'derivative_title' , 'relationship_type']]
 
 
 # Sidebar options for _all_ data of a particular type
@@ -245,7 +249,7 @@ def get_subtype_charts(selected_type, origdf):
         cd_full_1['mt_cad_type'].replace({'Authentic':'authentic', 'Phrygian':'phrygian', 'Plagal':'plagal'}, inplace=True) 
         #distribution plot for type and tone
         color_plot = alt.Chart(cd_full_1).mark_circle(size=60).encode(
-            x='piece_piece_id',
+            x='piece_id',
             y='mt_cad_type',
             color='mt_cad_tone',
             tooltip=['id', 'observer_name', 'mt_cad_type', 'mt_cad_tone']
@@ -391,7 +395,7 @@ order = st.radio("Select order to filter data: ", ('Piece then Musical Type', 'M
 if (order == 'Piece then Musical Type'):
     #filter by piece
     st.subheader("Piece")
-    piece_frames = filter_by("piece_piece_id", select_data, df, 'a')
+    piece_frames = filter_by("piece_id", select_data, df, 'a')
     piece_full = piece_frames[0]
     piece_sub = piece_frames[1]
     #st.write(piece_full)
@@ -405,6 +409,17 @@ if (order == 'Piece then Musical Type'):
     st.markdown('Resulting observations:')
     #st.write(mt_full)
     st.write(mt_sub)
+
+    # view url via link
+
+    st.subheader("Enter Observation to View on CRIM Project")
+
+    prefix = "https://crimproject.org/observations/" 
+    int_val = st.text_input('Observation Number')
+    combined = prefix + int_val
+
+    st.markdown(combined, unsafe_allow_html=True)
+
 
     st.subheader('Download Filtered Results as CSV')
     userinput = st.text_input('Name of file for download (must include ".csv")', key='1')
@@ -421,7 +436,7 @@ if (order == 'Piece then Musical Type'):
     if showtype:
         draw_mt_chart(mt_full)
     if showpiece:
-        draw_chart("piece_piece_id", "countpiece", mt_sub)
+        draw_chart("piece_id", "countpiece", mt_sub)
     
     showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
     if showfiltered:
@@ -441,7 +456,7 @@ else:
 
     #filter by piece with or without musical type
     st.subheader("Piece")
-    piece_frames = filter_by('piece_piece_id', mt_sub, mt_full, 'y')
+    piece_frames = filter_by('piece', mt_sub, mt_full, 'y')
     piece_full = piece_frames[0]
     piece_sub = piece_frames[1]
     st.markdown('Resulting observations:')
@@ -461,7 +476,7 @@ else:
     if showtype:
         draw_mt_chart(piece_full)
     if showpiece:
-        draw_chart("piece_piece_id", "countpiece", piece_sub)
+        draw_chart("piece", "countpiece", piece_sub)
 
     showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
     if showfiltered:
@@ -489,12 +504,12 @@ order = st.radio("Select order to filter data: ", ('Pieces then Relationship Typ
 if (order == 'Pieces then Relationship Type'):
     #filter by pieces
     st.subheader("Model Piece")
-    mpiece_frames = filter_by("model_observation_piece_piece_id", select_data_r, df_r, 'c')
+    mpiece_frames = filter_by("model", select_data_r, df_r, 'c')
     mpiece_full = mpiece_frames[0]
     mpiece_sub = mpiece_frames[1]
 
     st.subheader("Derivative Piece")
-    dpiece_frames = filter_by("derivative_observation_piece_piece_id", mpiece_sub, mpiece_full, 'd')
+    dpiece_frames = filter_by("derivative", mpiece_sub, mpiece_full, 'd')
     dpiece_full = dpiece_frames[0]
     dpiece_sub = dpiece_frames[1]
 
@@ -506,6 +521,16 @@ if (order == 'Pieces then Relationship Type'):
     st.markdown('Resulting relationships:')
     #st.write(rt_full)
     st.write(rt_sub)
+
+    st.subheader("Enter Relationship to View on CRIM Project")
+
+    # view url via link
+
+    prefix = "https://crimproject.org/relationships/" 
+    int_val = st.text_input('Relationship Number')
+    combined = prefix + int_val
+
+    st.markdown(combined, unsafe_allow_html=True)
 
     st.subheader('Download Filtered Results as CSV')
     userinput_r = st.text_input('Name of file for download (must include ".csv")', key='3')
@@ -521,37 +546,11 @@ if (order == 'Pieces then Relationship Type'):
     showdpiece = st.checkbox('By derivative observation piece', value=False)
     if showrtype:
         draw_rt_chart(rt_full)
-        
-        st.write('Subtype chart for Quotation')
-        #subtypes of quotation
-        q_chosen = (rt_full['rt_q'] == 1)
-        q_full = rt_full[q_chosen]
-        qx = (q_full['rt_q_x'] == 1)
-        qx_count = q_full[qx].shape[0]
-
-        qm = (q_full['rt_q_monnayage'] == 1)
-        qm_count = q_full[qm].shape[0]
-
-        q_dict = {'Subtypes':['exact', 'monnayage'],
-                    'count': [int(qx_count), int(qm_count)]}
-        df_q = pd.DataFrame(data=q_dict)
-        chart_q = alt.Chart(df_q).mark_bar().encode(
-            x = 'count',
-            y = 'Subtypes',
-        )
-        text_q = chart_q.mark_text(
-            align='left',
-            baseline='middle',
-            dx=3
-        ).encode(
-            text = 'count'
-        )
-        st.write(chart_q+text_q)
-
+    
     if showmpiece:
-        draw_chart("model_observation_piece_piece_id", "countmpiece", rt_sub)
+        draw_chart("model", "countmpiece", rt_sub)
     if showdpiece:
-        draw_chart("derivative_observation_piece_piece_id", "countdpiece", rt_sub)
+        draw_chart("derivative", "countdpiece", rt_sub)
 
 else:
     #filter by musical type
@@ -563,13 +562,13 @@ else:
 
     #filter by piece with or without musical type
     st.subheader("Model Piece")
-    mpiece_frames = filter_by('model_observation_piece_piece_id', rt_sub, rt_full, 'w')
+    mpiece_frames = filter_by('model', rt_sub, rt_full, 'w')
     mpiece_full = mpiece_frames[0]
     mpiece_sub = mpiece_frames[1]
     #st.write(mpiece_sub)
 
     st.subheader("Derivative Piece")
-    dpiece_frames = filter_by('derivative_observation_piece_piece_id', mpiece_sub, mpiece_full, 'v')
+    dpiece_frames = filter_by('derivative', mpiece_sub, mpiece_full, 'v')
     dpiece_full = dpiece_frames[0]
     dpiece_sub = dpiece_frames[1]
     st.markdown('Resulting relationships:')
@@ -587,35 +586,12 @@ else:
     showrtype = st.checkbox('By relationship type', value=False)
     showmpiece = st.checkbox('By model observation piece', value=False)
     showdpiece = st.checkbox('By derivative observation piece', value=False)
-    if showmpiece:
-        draw_chart("model_observation_piece_piece_id", "countmpiece", dpiece_sub)
-    if showdpiece:
-        draw_chart("derivative_observation_piece_piece_id", "countdpiece", dpiece_sub)
     if showrtype:
         draw_rt_chart(dpiece_full)
-        st.write('Subtype chart for Quotation')
-        #subtypes of quotation
-        q_chosen = (dpiece_full['rt_q'] == 1)
-        q_full = dpiece_full[q_chosen]
-        qx = (q_full['rt_q_x'] == 1)
-        qx_count = q_full[qx].shape[0]
-
-        qm = (q_full['rt_q_monnayage'] == 1)
-        qm_count = q_full[qm].shape[0]
-
-        q_dict = {'Subtypes':['exact', 'monnayage'],
-                    'count': [int(qx_count), int(qm_count)]}
-        df_q = pd.DataFrame(data=q_dict)
-        chart_q = alt.Chart(df_q).mark_bar().encode(
-            x = 'count',
-            y = 'Subtypes',
-        )
-        text_q = chart_q.mark_text(
-            align='left',
-            baseline='middle',
-            dx=3
-        ).encode(
-            text = 'count'
-        )
-        st.write(chart_q+text_q)
+    if showmpiece:
+        draw_chart("model", "countmpiece", dpiece_sub)
+    if showdpiece:
+        draw_chart("derivative", "countdpiece", dpiece_sub)
+    
+    
 
