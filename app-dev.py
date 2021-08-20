@@ -37,7 +37,7 @@ def download_link(object_to_download, download_filename, download_link_text):
 
 #main heading of the resource
 
-st.header("CRIM Project Meta Data Viewer")
+st.header("CRIM Project Meta Data Viewer 2.0")
 
 st.write("These tools assemble metadata for about 5000 observations and 2500 relationships in Citations: The Renaissance Imitation Mass.")
 st.write("Visit the [CRIM Project](https://crimproject.org) and its [Members Pages] (https://sites.google.com/haverford.edu/crim-project/home).")
@@ -53,30 +53,26 @@ st.write("Other tools allow you to create __graphs and charts__ of data for each
 
 @st.cache(allow_output_mutation=True)
 
-# get the data function 
+# get the data function
 def get_data(link):
     data = requests.get(link).json()
     #df = pd.DataFrame(data)
     df = pd.json_normalize(data)
-    return df 
+    return df
 
 
 df = get_data('http://crimproject.org/data/observations/')
 df.rename(columns={'piece.piece_id':'piece_id',
-                    'observer.name' : 'observer_name',
-                    'piece.full_title' : 'title'}, inplace=True)
+                    'observer.name' : 'observer_name'}, inplace=True)
 
 df_r = get_data('http://crimproject.org/data/relationships/')
 df_r.rename(columns={'piece.piece_id':'piece_id',
-                    'piece.full_title' : 'title',
                     'observer.name':'observer_name',
                     'model_observation.piece.piece_id':'model',
-                    'model_observation.piece.full_title' : 'model_title',
-                    'derivative_observation.piece.piece_id':'derivative',
-                    'derivative_observation.piece.full_title' : 'derivative_title'}, inplace=True)
+                    'derivative_observation.piece.piece_id':'derivative',}, inplace=True)
 
-select_data = df[["id", "observer_name", "piece_id", "title", "musical_type"]]
-select_data_r = df_r[['id', 'observer_name', 'model', 'model_title', 'derivative', 'derivative_title' , 'relationship_type']]
+select_data = df[["id", "observer_name", "piece_id", "musical_type"]]
+select_data_r = df_r[['id', 'observer_name', 'model', 'derivative', 'relationship_type']]
 
 
 # Sidebar options for _all_ data of a particular type
@@ -93,17 +89,17 @@ if st.sidebar.checkbox('Show Selected Metadata:  Observer, Type'):
 
 if st.sidebar.checkbox('Show Total Observations per Analyst'):
     st.subheader('Total Observations per Analyst')
-    st.write(df['observer_name'].value_counts())  
+    st.write(df['observer_name'].value_counts())
 
 
 if st.sidebar.checkbox('Show Total Observations per Musical Type'):
     st.subheader('Total Observations per Musical Type')
     st.write(df['musical_type'].value_counts())
-  
+
 
 # st.subheader("All Data and MEI Views")
 # sa = st.text_input('Name of file for download (must include ".csv")')
-# ## Button to download CSV of results 
+# ## Button to download CSV of results
 # if st.button('Download Complete Dataset as CSV'):
 #     #s = st.text_input('Enter text here')
 #     tmp_download_link = download_link(df, sa, 'Click here to download your data!')
@@ -128,7 +124,7 @@ def filter_by(filterer, select_data, full_data, key):
     else:
         subframe = select_data
         fullframe = full_data
-    
+
     return [fullframe, subframe]
 
 def draw_chart(col_name, count_name, origdf):
@@ -147,7 +143,7 @@ def draw_chart(col_name, count_name, origdf):
     ).encode(
         text = count_name
     )
-    st.write(chart+text) 
+    st.write(chart+text)
 
 def draw_mt_chart(origdf):
     cf_count = get_mt_count(origdf, 'mt_cf')
@@ -200,7 +196,7 @@ def draw_rt_chart(origdf):
         text = 'count'
     )
     st.write(chart_rt+text_rt)
-    
+
 
 def get_subtype_count(origdf, mt, stname):
     subtype = (origdf['mt_' + mt + '_' + stname] == 1)
@@ -223,7 +219,7 @@ def get_subtype_charts(selected_type, origdf):
         cd_full = origdf[cd_chosen]
         #separate cd type chart (3 types and counts of each)
         cd_dict = {'mt_cad_type':['authentic','phrygian','plagal'],
-                    'countcdtypes': [ 
+                    'countcdtypes': [
                         get_cdtype_count(cd_full, ['authentic', 'Authentic']),
                         get_cdtype_count(cd_full, ['phrygian', 'Phrygian']),
                         get_cdtype_count(cd_full, ['plagal', 'Plagal']),
@@ -243,10 +239,10 @@ def get_subtype_charts(selected_type, origdf):
         st.write(chart_cd+text_cd)
 
         draw_chart('mt_cad_tone', 'countcdtones', cd_full)
-        
+
         st.write('Distribution plot for cadence type - hover over any point for information')
         cd_full_1 = cd_full.copy()
-        cd_full_1['mt_cad_type'].replace({'Authentic':'authentic', 'Phrygian':'phrygian', 'Plagal':'plagal'}, inplace=True) 
+        cd_full_1['mt_cad_type'].replace({'Authentic':'authentic', 'Phrygian':'phrygian', 'Plagal':'plagal'}, inplace=True)
         #distribution plot for type and tone
         color_plot = alt.Chart(cd_full_1).mark_circle(size=60).encode(
             x='piece_id',
@@ -263,11 +259,11 @@ def get_subtype_charts(selected_type, origdf):
         fg_full = origdf[fg_chosen]
         fg_dict = {'Subtypes':['periodic', 'strict', 'flexed', 'sequential', 'inverted', 'retrograde'],
                     'count': [
-                        get_subtype_count(fg_full, 'fg', 'periodic'), 
-                        get_subtype_count(fg_full, 'fg', 'strict'), 
-                        get_subtype_count(fg_full, 'fg', 'flexed'), 
-                        get_subtype_count(fg_full, 'fg', 'sequential'), 
-                        get_subtype_count(fg_full, 'fg', 'inverted'), 
+                        get_subtype_count(fg_full, 'fg', 'periodic'),
+                        get_subtype_count(fg_full, 'fg', 'strict'),
+                        get_subtype_count(fg_full, 'fg', 'flexed'),
+                        get_subtype_count(fg_full, 'fg', 'sequential'),
+                        get_subtype_count(fg_full, 'fg', 'inverted'),
                         get_subtype_count(fg_full, 'fg', 'retrograde'),
                     ]}
         df_fg = pd.DataFrame(data=fg_dict)
@@ -289,13 +285,13 @@ def get_subtype_charts(selected_type, origdf):
         pe_full = origdf[pe_chosen]
 
         pe_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'sequential', 'added entry', 'invertible'],
-                    'count': [ 
-                        get_subtype_count(pe_full, 'pe', 'strict'), 
-                        get_subtype_count(pe_full, 'pe', 'flexed'), 
+                    'count': [
+                        get_subtype_count(pe_full, 'pe', 'strict'),
+                        get_subtype_count(pe_full, 'pe', 'flexed'),
                         get_subtype_count(pe_full, 'pe', 'flt'),
-                        get_subtype_count(pe_full, 'pe', 'sequential'), 
-                        get_subtype_count(pe_full, 'pe', 'added'), 
-                        get_subtype_count(pe_full, 'pe', 'invertible'), 
+                        get_subtype_count(pe_full, 'pe', 'sequential'),
+                        get_subtype_count(pe_full, 'pe', 'added'),
+                        get_subtype_count(pe_full, 'pe', 'invertible'),
                     ]}
         df_pe = pd.DataFrame(data=pe_dict)
         chart_pe = alt.Chart(df_pe).mark_bar().encode(
@@ -314,13 +310,13 @@ def get_subtype_charts(selected_type, origdf):
     if selected_type.lower() == "imitative duo":
         id_chosen = (origdf['mt_id'] == 1)
         id_full = origdf[id_chosen]
-    
+
         id_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'invertible'],
-                    'count': [ 
-                        get_subtype_count(id_full, 'id', 'strict'), 
-                        get_subtype_count(id_full, 'id', 'flexed'), 
+                    'count': [
+                        get_subtype_count(id_full, 'id', 'strict'),
+                        get_subtype_count(id_full, 'id', 'flexed'),
                         get_subtype_count(id_full, 'id', 'flt'),
-                        get_subtype_count(id_full, 'id', 'invertible'), 
+                        get_subtype_count(id_full, 'id', 'invertible'),
                     ]}
         df_id = pd.DataFrame(data=id_dict)
         chart_id = alt.Chart(df_id).mark_bar().encode(
@@ -341,11 +337,11 @@ def get_subtype_charts(selected_type, origdf):
         nid_full = origdf[nid_chosen]
 
         nid_dict = {'Subtypes':['strict', 'flexed melodic', 'flexed rhythmic', 'invertible'],
-                    'count': [ 
-                        get_subtype_count(nid_full, 'nid', 'strict'), 
-                        get_subtype_count(nid_full, 'nid', 'flexed'), 
+                    'count': [
+                        get_subtype_count(nid_full, 'nid', 'strict'),
+                        get_subtype_count(nid_full, 'nid', 'flexed'),
                         get_subtype_count(nid_full, 'nid', 'flt'),
-                        get_subtype_count(nid_full, 'nid', 'invertible'), 
+                        get_subtype_count(nid_full, 'nid', 'invertible'),
                     ]}
         df_nid = pd.DataFrame(data=nid_dict)
         chart_nid = alt.Chart(df_nid).mark_bar().encode(
@@ -366,11 +362,11 @@ def get_subtype_charts(selected_type, origdf):
         hr_full = origdf[hr_chosen]
 
         hr_dict = {'Subtypes':['simple', 'staggered', 'sequential', 'fauxbourdon'],
-                    'count': [ 
-                        get_subtype_count(hr_full, 'hr', 'simple'), 
-                        get_subtype_count(hr_full, 'hr', 'staggered'), 
+                    'count': [
+                        get_subtype_count(hr_full, 'hr', 'simple'),
+                        get_subtype_count(hr_full, 'hr', 'staggered'),
                         get_subtype_count(hr_full, 'hr', 'sequential'),
-                        get_subtype_count(hr_full, 'hr', 'fauxbourdon'), 
+                        get_subtype_count(hr_full, 'hr', 'fauxbourdon'),
                     ]}
         df_hr = pd.DataFrame(data=hr_dict)
         chart_hr = alt.Chart(df_hr).mark_bar().encode(
@@ -389,7 +385,7 @@ def get_subtype_charts(selected_type, origdf):
 
 
 st.markdown("---")
-st.header("OBSERVATION VIEWER")
+
 
 order = st.radio("Select order to filter data: ", ('Piece then Musical Type', 'Musical Type then Piece'))
 if (order == 'Piece then Musical Type'):
@@ -410,7 +406,7 @@ if (order == 'Piece then Musical Type'):
     #st.write(mt_full)
     st.write(mt_sub)
 
-    # view url via link
+    # how to view url via link
 
     st.subheader("Enter Observation to View on CRIM Project")
 
@@ -420,6 +416,7 @@ if (order == 'Piece then Musical Type'):
 
     st.markdown(combined, unsafe_allow_html=True)
 
+    # resume code
 
     st.subheader('Download Filtered Results as CSV')
     userinput = st.text_input('Name of file for download (must include ".csv")', key='1')
@@ -437,7 +434,7 @@ if (order == 'Piece then Musical Type'):
         draw_mt_chart(mt_full)
     if showpiece:
         draw_chart("piece_id", "countpiece", mt_sub)
-    
+
     showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
     if showfiltered:
         selected_types = mt_sub['musical_type'].unique().tolist()
@@ -456,11 +453,13 @@ else:
 
     #filter by piece with or without musical type
     st.subheader("Piece")
-    piece_frames = filter_by('piece', mt_sub, mt_full, 'y')
+    piece_frames = filter_by('piece_id', mt_sub, mt_full, 'y')
     piece_full = piece_frames[0]
     piece_sub = piece_frames[1]
     st.markdown('Resulting observations:')
     st.write(piece_sub)
+
+    
 
     st.subheader('Download Filtered Results as CSV')
     userinput = st.text_input('Name of file for download (must include ".csv")', key='2')
@@ -476,7 +475,7 @@ else:
     if showtype:
         draw_mt_chart(piece_full)
     if showpiece:
-        draw_chart("piece", "countpiece", piece_sub)
+        draw_chart("piece_id", "countpiece", piece_sub)
 
     showfiltered = st.checkbox('Show subtype charts for filtered results', value=False)
     if showfiltered:
@@ -488,7 +487,7 @@ else:
 
 
 st.markdown("---")
-st.header("Subtype Charts All Data") 
+st.header("Subtype Charts All Data")
 
 showall = st.checkbox('Show subtype charts for all data', value=False)
 if showall:
@@ -522,9 +521,9 @@ if (order == 'Pieces then Relationship Type'):
     #st.write(rt_full)
     st.write(rt_sub)
 
-    st.subheader("Enter Relationship to View on CRIM Project")
+    # how to view url via link
 
-    # view url via link
+    st.subheader("Enter Relationship to View on CRIM Project")
 
     prefix = "https://crimproject.org/relationships/" 
     int_val = st.text_input('Relationship Number')
@@ -546,7 +545,33 @@ if (order == 'Pieces then Relationship Type'):
     showdpiece = st.checkbox('By derivative observation piece', value=False)
     if showrtype:
         draw_rt_chart(rt_full)
-    
+
+        st.write('Subtype chart for Quotation')
+        #subtypes of quotation
+        q_chosen = (rt_full['rt_q'] == 1)
+        q_full = rt_full[q_chosen]
+        qx = (q_full['rt_q_x'] == 1)
+        qx_count = q_full[qx].shape[0]
+
+        qm = (q_full['rt_q_monnayage'] == 1)
+        qm_count = q_full[qm].shape[0]
+
+        q_dict = {'Subtypes':['exact', 'monnayage'],
+                    'count': [int(qx_count), int(qm_count)]}
+        df_q = pd.DataFrame(data=q_dict)
+        chart_q = alt.Chart(df_q).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        text_q = chart_q.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_q+text_q)
+
     if showmpiece:
         draw_chart("model", "countmpiece", rt_sub)
     if showdpiece:
@@ -586,12 +611,34 @@ else:
     showrtype = st.checkbox('By relationship type', value=False)
     showmpiece = st.checkbox('By model observation piece', value=False)
     showdpiece = st.checkbox('By derivative observation piece', value=False)
-    if showrtype:
-        draw_rt_chart(dpiece_full)
     if showmpiece:
         draw_chart("model", "countmpiece", dpiece_sub)
     if showdpiece:
         draw_chart("derivative", "countdpiece", dpiece_sub)
-    
-    
+    if showrtype:
+        draw_rt_chart(dpiece_full)
+        st.write('Subtype chart for Quotation')
+        #subtypes of quotation
+        q_chosen = (dpiece_full['rt_q'] == 1)
+        q_full = dpiece_full[q_chosen]
+        qx = (q_full['rt_q_x'] == 1)
+        qx_count = q_full[qx].shape[0]
 
+        qm = (q_full['rt_q_monnayage'] == 1)
+        qm_count = q_full[qm].shape[0]
+
+        q_dict = {'Subtypes':['exact', 'monnayage'],
+                    'count': [int(qx_count), int(qm_count)]}
+        df_q = pd.DataFrame(data=q_dict)
+        chart_q = alt.Chart(df_q).mark_bar().encode(
+            x = 'count',
+            y = 'Subtypes',
+        )
+        text_q = chart_q.mark_text(
+            align='left',
+            baseline='middle',
+            dx=3
+        ).encode(
+            text = 'count'
+        )
+        st.write(chart_q+text_q)
